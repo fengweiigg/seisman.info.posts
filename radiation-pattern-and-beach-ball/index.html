@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>辐射花样的计算与震源球的绘制 - SeisMan</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="SeisMan" />
+  <meta name="description" content="P 波辐射花样计算公式 Quantitative Seismology (Aki and Richards,1980) 中式（4.29）给出了零迹地震矩 M 所产生的 n 分量位移公式：
+其中等式右边共计 5 项，第一项为近场项，第二、三项分别是 P、S 波的中间场项，第四、五项分别为 P、S 波的远场项。一般研究辐射花样大多关注于 P 波远场辐射花样，即第四项。
+
+" />
+
+  <meta name="keywords" content="地球物理学, 地震学, SAC, 软件, 开源" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.46" />
+
+
+<link rel="canonical" href="https://blog.seisman.info/radiation-pattern-and-beach-ball/" />
+
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+
+
+
+
+<link href="/dist/even.min.css?v=3.1.1" rel="stylesheet">
+<link href="/lib/fancybox/jquery.fancybox-3.1.20.min.css" rel="stylesheet">
+
+
+
+
+<meta property="og:title" content="辐射花样的计算与震源球的绘制" />
+<meta property="og:description" content="P 波辐射花样计算公式
+
+Quantitative Seismology (Aki and Richards,1980) 中式（4.29）给出了零迹地震矩 M 所产生的 n 分量位移公式：
+
+
+
+其中等式右边共计 5 项，第一项为近场项，第二、三项分别是 P、S 波的中间场项，第四、五项分别为 P、S 波的远场项。一般研究辐射花样大多关注于 P 波远场辐射花样，即第四项。
+
+" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://blog.seisman.info/radiation-pattern-and-beach-ball/" />
+
+
+
+<meta property="article:published_time" content="2014-05-01T00:00:00&#43;00:00"/>
+
+<meta property="article:modified_time" content="2014-05-01T00:00:00&#43;00:00"/>
+
+
+
+
+
+
+
+
+
+
+
+<meta itemprop="name" content="辐射花样的计算与震源球的绘制">
+<meta itemprop="description" content="P 波辐射花样计算公式
+
+Quantitative Seismology (Aki and Richards,1980) 中式（4.29）给出了零迹地震矩 M 所产生的 n 分量位移公式：
+
+
+
+其中等式右边共计 5 项，第一项为近场项，第二、三项分别是 P、S 波的中间场项，第四、五项分别为 P、S 波的远场项。一般研究辐射花样大多关注于 P 波远场辐射花样，即第四项。
+
+">
+
+
+<meta itemprop="datePublished" content="2014-05-01T00:00:00&#43;00:00" />
+<meta itemprop="dateModified" content="2014-05-01T00:00:00&#43;00:00" />
+<meta itemprop="wordCount" content="2289">
+
+
+
+<meta itemprop="keywords" content="辐射花样,震源球,GMT," />
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="辐射花样的计算与震源球的绘制"/>
+<meta name="twitter:description" content="P 波辐射花样计算公式
+
+Quantitative Seismology (Aki and Richards,1980) 中式（4.29）给出了零迹地震矩 M 所产生的 n 分量位移公式：
+
+
+
+其中等式右边共计 5 项，第一项为近场项，第二、三项分别是 P、S 波的中间场项，第四、五项分别为 P、S 波的远场项。一般研究辐射花样大多关注于 P 波远场辐射花样，即第四项。
+
+"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">SeisMan</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <a href="/">
+        <li class="mobile-menu-item">首页</li>
+      </a><a href="/post/">
+        <li class="mobile-menu-item">归档</li>
+      </a><a href="/categories/">
+        <li class="mobile-menu-item">分类</li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">标签</li>
+      </a><a href="http://seisman.qiniudn.com/seisman-blog.pdf">
+        <li class="mobile-menu-item">PDF</li>
+      </a><a href="/links/">
+        <li class="mobile-menu-item">链接</li>
+      </a><a href="/collections/">
+        <li class="mobile-menu-item">合集</li>
+      </a><a href="/donations/">
+        <li class="mobile-menu-item">捐赠</li>
+      </a><a href="/about/">
+        <li class="mobile-menu-item">关于</li>
+      </a>
+  </ul>
+</nav>
+  <div class="container" id="mobile-panel">
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">SeisMan</a>
+</div>
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">首页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/post/">归档</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/categories/">分类</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/tags/">标签</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="http://seisman.qiniudn.com/seisman-blog.pdf">PDF</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/links/">链接</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/collections/">合集</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/donations/">捐赠</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/about/">关于</a>
+      </li>
+  </ul>
+</nav>
+    </header>
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">辐射花样的计算与震源球的绘制</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2014-05-01 </span>
+        <div class="post-category">
+            
+              <a href="/categories/%E5%9C%B0%E9%9C%87%E5%AD%A6%E5%9F%BA%E7%A1%80/"> 地震学基础 </a>
+            
+          </div>
+        
+        
+      </div>
+    </header>
+
+    
+    
+<div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  
+  <div class="post-toc-content">
+    <nav id="TableOfContents">
+<ul>
+<li>
+<ul>
+<li><a href="#p-波辐射花样计算公式">P 波辐射花样计算公式</a></li>
+<li><a href="#坐标系的选取">坐标系的选取</a></li>
+<li><a href="#震源机制解">震源机制解</a></li>
+<li><a href="#辐射花样计算代码">辐射花样计算代码</a></li>
+<li><a href="#震源球的绘制">震源球的绘制</a>
+<ul>
+<li><a href="#投影方式的选取">投影方式的选取</a></li>
+<li><a href="#绘图脚本">绘图脚本</a></li>
+</ul></li>
+<li><a href="#结果展示与比较">结果展示与比较</a>
+<ul>
+<li><a href="#震源机制解-1">震源机制解</a></li>
+<li><a href="#矩张量-wulff-投影">矩张量 + Wulff 投影</a></li>
+<li><a href="#矩张量-schmidt-投影">矩张量 + Schmidt 投影</a></li>
+<li><a href="#断层参数-wulff-投影">断层参数 + Wulff 投影</a></li>
+<li><a href="#断层参数-schmidt-投影">断层参数 + Schmidt 投影</a></li>
+<li><a href="#gmt-psmeca-绘制矩张量解">GMT psmeca 绘制矩张量解</a></li>
+<li><a href="#gmt-psmeca-绘制矩张量的-double-couple-部分">GMT psmeca 绘制矩张量的 double couple 部分</a></li>
+<li><a href="#mopad-绘制矩张量">Mopad 绘制矩张量</a></li>
+</ul></li>
+<li><a href="#图像格式转换">图像格式转换</a></li>
+<li><a href="#一些小结">一些小结</a></li>
+<li><a href="#修订历史">修订历史</a></li>
+</ul></li>
+</ul>
+</nav>
+  </div>
+</div>
+
+    
+    <div class="post-content">
+      <h2 id="p-波辐射花样计算公式">P 波辐射花样计算公式</h2>
+
+<p>Quantitative Seismology (Aki and Richards,1980) 中式（4.29）给出了零迹地震矩 M 所产生的 n 分量位移公式：</p>
+
+<p><img src="/images/2014050101.png" alt="" /></p>
+
+<p>其中等式右边共计 5 项，第一项为近场项，第二、三项分别是 P、S 波的中间场项，第四、五项分别为 P、S 波的远场项。一般研究辐射花样大多关注于 P 波远场辐射花样，即第四项。</p>
+
+<p></p>
+
+<p>式（4.91）中给出了远场 P 波位移的矢量形式，看上去更加直观一些：</p>
+
+<p><img src="/images/2014050102.png" alt="" /></p>
+
+<p>其中，除去震源时间函数以及绝对振幅，只留下辐射花样相关的因子：</p>
+
+<p>$$Rad = \mathbf{\gamma} \cdot \mathbf{M} \cdot \mathbf{\gamma}$$</p>
+
+<p>其中，$\mathbf{\gamma}$ 为离源矢量，是离源角和方位角的函数，表征了地震射线从震源的出射方向，$\mathbf{M}$ 为矩张量。</p>
+
+<h2 id="坐标系的选取">坐标系的选取</h2>
+
+<p>对于点源而言，上式中的矩张量是一个常量（M(t) 与时间相关的部分可以分离成震源时间函数），离源矢量是与方位角和离源角有关的矢量，所以求辐射花样的本质就是矢量和张量的乘法。如何选定坐标系是一个关键问题。</p>
+
+<p>按照 Aki&amp;Richards(1980) 中图 4.20 的方式定义坐标系，如下图，定义 X 轴为北向，Y 轴为东向，Z 轴为垂直向下，即 NED 坐标系。</p>
+
+<p><img src="/images/2014050103.jpg" alt="" /></p>
+
+<p>可以得到，此坐标下，离源矢量 $\mathbf{\gamma}$ 的具体形式:</p>
+
+<div> $$\mathbf{\gamma}=(\sin i_{\xi} \cos\phi, \sin i_{\xi} \sin\phi, \cos i_{\xi})$$ </div>
+
+<h2 id="震源机制解">震源机制解</h2>
+
+<p>震源机制解一般有两种表达方式，一种是矩张量形式，另一种是断层参数形式。</p>
+
+<ol>
+<li>矩张量形式是震源机制的通用表示方式，需要六个分量。对于地震震源而言，多限制矩张量为零迹张量，即去除爆炸源的成分，只保留 double couple 和 CLVD 部分。</li>
+<li>断层参数形式需要三个分量 (strike,dip,rake)，只能表示 double couple 位错源。</li>
+</ol>
+
+<p>Global CMT 给出了零迹矩张量解和断层参数解。</p>
+
+<ol>
+<li><p>若使用 GCMT 给出的断层参数 (strike,dip,rake) 解，则可根据 Aki&amp;Richards(1980) P117 Box4.4 中式 1 将其转换成 NED 坐标系下的矩张量。</p>
+
+<p><img src="/images/2014050104.jpg" alt="" /></p></li>
+
+<li><p>若使用 GCMT 给出的矩张量解，由于 GCMT 给出的是 (Mrr, Mtt, Mff, Mrt, Mrf, Mtf) 解，即 USE 坐标系下的矩张量，需要转换成 NED 坐标系的矩张量，方可使用。转换公式如下：</p>
+
+<div>
+$\begin{bmatrix}
+M_{rr} & M_{rt} & M_{rp} \\
+M_{tr} & M_{tt} & M_{tp} \\
+M_{pr} & M_{pt} & M_{pp}
+\end{bmatrix}$=$\begin{bmatrix}
+M_{zz} & M_{zx} & -M_{zy} \\
+M_{xz} & M_{xx} & -M_{xy} \\
+-M_{yz} & -M_{yx} & M_{yy}
+\end{bmatrix}$
+</div></li>
+</ol>
+
+<p>不同的文献给出的坐标系可能不同，比如这里提到的 NED 坐标系和 USE 坐标系。即便相同的坐标系所使用的符号也可能不同，比如 GCMT 的 $(r,t,f)$ 坐标系和 Aki&amp;Richards(1980) 中给出的 $(r,\Delta,\phi)$ 坐标系其实都是 USE 坐标系。</p>
+
+<h2 id="辐射花样计算代码">辐射花样计算代码</h2>
+
+<p>获得矩张量以及离源矢量的表达式之后，即可求出震源球上任一点的辐射振幅。代码如下：</p>
+
+<pre><code class="language-C">#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;math.h&gt;
+#define PI 3.14159265358979323846
+#define DEG2RAD PI/180.0
+
+int main (int argc, char *argv[]) {
+    int i, j;
+    float m[3][3];
+
+    if (argc != 7 &amp;&amp; argc != 4) {
+        fprintf(stderr,&quot;Usage: %s mrr mtt mff mrt mrf mtf\n&quot;, argv[0]);
+        fprintf(stderr,&quot;   Or: %s strike dip rake\n&quot;, argv[0]);
+        exit(1);
+    }
+
+    if (argc == 7) {    // moment tensor
+        sscanf(argv[1], &quot;%f&quot;, &amp;m[2][2]);    // mrr -&gt; mzz
+        sscanf(argv[2], &quot;%f&quot;, &amp;m[0][0]);    // mtt -&gt; mxx
+        sscanf(argv[3], &quot;%f&quot;, &amp;m[1][1]);    // mff -&gt; myy
+
+        sscanf(argv[4], &quot;%f&quot;, &amp;m[2][0]);    // mrt -&gt; mzx
+        m[0][2] = m[2][0];
+
+        sscanf(argv[5], &quot;%f&quot;, &amp;m[2][1]);    // mrf -&gt; -Mzy
+        m[2][1] = -m[2][1];
+        m[1][2] = m[2][1];
+
+        sscanf(argv[6], &quot;%f&quot;, &amp;m[0][1]);    // mtf -&gt; -Mxy
+        m[0][1] = -m[0][1];
+        m[1][0] = m[0][1];
+    } else if (argc == 4) { // strike, dip, rake
+        float strike, dip, rake;
+        sscanf(argv[1], &quot;%f&quot;, &amp;strike);
+        sscanf(argv[2], &quot;%f&quot;, &amp;dip   );
+        sscanf(argv[3], &quot;%f&quot;, &amp;rake  );
+        strike *= DEG2RAD;
+        rake   *= DEG2RAD;
+        dip    *= DEG2RAD;
+        m[0][0] = - sin(dip)*cos(rake)*sin(2*strike)
+                - sin(2*dip)*sin(rake)*sin(strike)*sin(strike);
+        m[0][1] = sin(dip)*cos(rake)*cos(2*strike)
+                + 0.5*sin(2*dip)*sin(rake)*sin(2*strike);
+        m[0][2] = -cos(dip)*cos(rake)*cos(strike)
+                - cos(2*dip)*sin(rake)*sin(strike);
+        m[1][1] = sin(dip)*cos(rake)*sin(2*strike)
+                - sin(2*dip)*sin(rake)*cos(strike)*cos(strike);
+        m[1][2] = -cos(dip)*cos(rake)*sin(strike)
+                + cos(2*dip)*sin(rake)*cos(strike);
+        m[2][2] = sin(2*dip)*sin(rake);
+        m[1][0] = m[0][1];
+        m[2][0] = m[0][2];
+        m[2][1] = m[1][2];
+    }
+
+    fprintf(stdout,&quot;    / %6.3f %6.3f %6.3f \\ \n&quot;, m[0][0], m[0][1], m[0][2]);
+    fprintf(stdout,&quot;M = | %6.3f %6.3f %6.3f | \n&quot;,  m[1][0], m[1][1], m[1][2]);
+    fprintf(stdout,&quot;    \\ %6.3f %6.3f %6.3f / \n&quot;, m[2][0], m[2][1], m[2][2]);
+
+    FILE *fop;
+    fop = fopen(&quot;pattern.dat&quot;, &quot;wb&quot;);
+    double az, theta;
+    float p[3];         // 离源矢量
+    for (i=0; i&lt;3600; i++)
+      for (j=0; j&lt;=900; j++) {
+        az = (double)i / 10.0 * DEG2RAD;     // 方位角
+        theta = (double)j/10.0 * DEG2RAD;    // 离源角，仅计算下半球
+        p[0] = (float)(sin(theta)*cos(az));
+        p[1] = (float)(sin(theta)*sin(az));
+        p[2] = (float)(cos(theta));
+
+        int k, l;
+        float amp = 0.0;
+        for (k=0; k&lt;=2; k++)
+          for (l=0; l&lt;=2; l++){
+            amp += p[k]*m[k][l]*p[l];
+        }
+        fwrite(&amp;amp, sizeof(float), 1, fop);
+    }
+    fclose(fop);
+
+    return 0;
+}
+</code></pre>
+
+<p>此代码可以正确处理断层参数和矩张量两种形式的震源机制解，二者均可被正确转换为 NED 坐标系下的矩张量解。对 360 度的方位角以及 90 度的离源角进行遍历，计算每一点的振幅值，并保存到 <code>pattern.dat</code> 中待用。</p>
+
+<p>关于离源角，需要注意两点：</p>
+
+<ol>
+<li>离源角的取值范围为 [0,90]，即只计算震源球的下半球，这是因为多数情况下绘制震源球都使用下半球投影（上半球辐射的能量无法传播到大震中距处）。</li>
+<li>离源角与纬度的对应关系为：纬度 = 离源角 - 90。</li>
+</ol>
+
+<h2 id="震源球的绘制">震源球的绘制</h2>
+
+<h3 id="投影方式的选取">投影方式的选取</h3>
+
+<p>目前已经拥有了震源球的下半球上任意一点的振幅（未归一化），还需要选择合适的投影方式将数据投影到 “赤道” 面上。</p>
+
+<p>绘制震源球有两种投影方式，分别是 Schmidt 投影和 Wulff 投影。前者是等面积投影，后者是等角度投影。在 GMT 中分别对应 <code>JA</code> 和 <code>JS</code> 。这里以 Wulff 投影为例，想要使用 Schmidt 投影只需要把 <code>JS</code> 改成 <code>JA</code> 即可。</p>
+
+<h3 id="绘图脚本">绘图脚本</h3>
+
+<pre><code class="language-bash">#!/bin/bash
+R=0/360/-90/0
+J=S0/-90/15c
+B=a30f10N
+name=pattern
+PS=meca.ps
+
+gmtset BASEMAP_TYPE=plain
+gmtset PLOT_DEGREE_FORMAT=+
+xyz2grd ${name}.dat -G${name}.nc -I6m/6m -R$R -ZLBxf
+grd2cpt ${name}.nc -Cpolar -E100 &gt; ${name}.cpt
+psxy -R$R -J$J -T -K -P &gt; $PS
+grdimage ${name}.nc -R$R -J$J -C${name}.cpt -B$B -K -O &gt;&gt; $PS
+grdcontour ${name}.nc -R$R -J$J -L-0.001/0.001 -C1 -K -O -W2p &gt;&gt; $PS
+psxy -R$R -J$J -T -O &gt;&gt; $PS
+rm .gmt* ${name}.cpt ${name}.nc
+</code></pre>
+
+<p>绘图脚本的一些说明：</p>
+
+<ol>
+<li>设置 <code>PLOT_DEGREE_FORMAT</code> 使得方位角范围是 0 到 360，而不是 -180 到 180。其中 0 度指向正北方向。</li>
+<li>这里 R 的横向范围是 0 到 360，实际上 360 度处与 0 度处是同一个经度，所以网格中没有计算 360 度处的振幅。同时在 <code>-Z</code> 选项中使用了 x 以表明 X 轴的周期性。</li>
+<li>在振幅为 0 处绘制了等值线。</li>
+</ol>
+
+<h2 id="结果展示与比较">结果展示与比较</h2>
+
+<h3 id="震源机制解-1">震源机制解</h3>
+
+<p>从 GCMT 中找到一个地震事件，其机制解如下:</p>
+
+<pre><code>201304191751A SOUTH OF TIMOR, INDONESI
+    Date: 2013/ 4/19 Centroid Time: 17:51:46.9 GMT
+    Lat= -12.01 Lon= 121.71
+    Depth= 29.5 Half duration= 2.0
+    Centroid time minus hypocenter time: 5.5
+    Moment Tensor: Expo=24 -1.350 5.410 -4.060 -3.210 -3.580 -0.736
+    Mw = 5.8 mb = 6.0 Ms = 5.8 Scalar Moment = 6.88e+24
+    Fault plane: strike=315 dip=45 slip=-12
+    Fault plane: strike=53  dip=82 slip=-135
+</code></pre>
+
+<h3 id="矩张量-wulff-投影">矩张量 + Wulff 投影</h3>
+
+<p><img src="/images/2014050106.png" alt="" /></p>
+
+<h3 id="矩张量-schmidt-投影">矩张量 + Schmidt 投影</h3>
+
+<p><img src="/images/2014050107.png" alt="" /></p>
+
+<h3 id="断层参数-wulff-投影">断层参数 + Wulff 投影</h3>
+
+<p><img src="/images/2014050108.png" alt="" /></p>
+
+<h3 id="断层参数-schmidt-投影">断层参数 + Schmidt 投影</h3>
+
+<p><img src="/images/2014050109.png" alt="" /></p>
+
+<h3 id="gmt-psmeca-绘制矩张量解">GMT psmeca 绘制矩张量解</h3>
+
+<p>psmeca 的 <code>-Sm</code> 选择可以用于在地图上绘制 GCMT 矩张量形式的震源球。需要注意的是这个震源球的投影方式与 <code>J</code> 指定的投影无关。这里把边框画出来，以指示出正北方向。</p>
+
+<pre><code class="language-bash">#!/bin/bash
+psmeca -R0/250/-90/90 -JQ22c -Sm7c -W1p -B60/30 &lt;&lt;EOF&gt; gmt_meca.ps
+121.71 -12.01 29 -1.35 5.41 -4.06 -3.21 -3.58 -0.74 24 X Y 201304191751A
+EOF
+</code></pre>
+
+<p><img src="/images/2014050110.png" alt="" /></p>
+
+<h3 id="gmt-psmeca-绘制矩张量的-double-couple-部分">GMT psmeca 绘制矩张量的 double couple 部分</h3>
+
+<p><code>-Sd</code> 用于绘制矩张量的 double couple 部分。</p>
+
+<pre><code class="language-bash">#!/bin/bash
+psmeca -R0/250/-90/90 -JQ22c -Sd7c -W1p -B60/30 &lt;&lt;EOF&gt; gmt_meca.ps
+121.71 -12.01 29 -1.35 5.41 -4.06 -3.21 -3.58 -0.74 24 X Y 201304191751A
+EOF
+</code></pre>
+
+<p><img src="/images/2014050111.png" alt="" /></p>
+
+<h3 id="mopad-绘制矩张量">Mopad 绘制矩张量</h3>
+
+<p>Mopad 是一个可以计算与绘制矩张量的 Python 脚本，其功能强大，可控制的参数更多:</p>
+
+<pre><code>$ mopad plot -1.35,5.41,-4.06,-3.21,-3.58,-0.74 -i USE
+</code></pre>
+
+<p>这里 <code>-i USE</code> 指定了输入的六个矩张量分量是 USE 坐标下的解。</p>
+
+<p><img src="/images/2014050112.jpg" alt="" /></p>
+
+<h2 id="图像格式转换">图像格式转换</h2>
+
+<p>利用 ps2raster 命令可以将 PS 文件转换为其它格式的图像，最好选择透明的 PNG 格式:</p>
+
+<pre><code>ps2raster -A -TG beachball.ps
+</code></pre>
+
+<h2 id="一些小结">一些小结</h2>
+
+<ol>
+<li>绘制震源球时，选择匹配的坐标系很重要；</li>
+<li>可以使用 Schmidt 投影和 Wulff 投影绘制震源球，二者大体相同，细节上有差异；</li>
+<li>GMT 的 psmeca 命令使用 Schmidt 投影绘制震源球，这一点无法修改；</li>
+<li>GCMT 给出的震源球精度很低，但可以看出其使用了 Schmidt 投影 <code>JA</code> 。</li>
+</ol>
+
+<h2 id="修订历史">修订历史</h2>
+
+<ul>
+<li>2014-04-28：初稿 By cxh757；</li>
+<li>2014-05-01：修订与补充 By SeisMan；</li>
+<li>2014-05-30：增加了图像格式转换一节；</li>
+</ul>
+    </div>
+
+    
+    <div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">SeisMan</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">2014-05-01</span>
+  </p>
+  
+  
+</div>
+
+    
+    
+<div class="post-reward">
+  <input type="checkbox" name="reward" id="reward" hidden />
+  <label class="reward-button" for="reward">赞赏支持</label>
+  <div class="qr-code">
+    
+    
+      <label class="qr-code-image" for="reward">
+        <img class="image" src="/images/wechatpay-qr-code.png">
+        <span>微信打赏</span>
+      </label>
+    
+      <label class="qr-code-image" for="reward">
+        <img class="image" src="/images/alipay-qr-code.png">
+        <span>支付宝打赏</span>
+      </label>
+  </div>
+</div>
+
+    <footer class="post-footer">
+      <div class="post-tags">
+          
+          <a href="/tags/%E8%BE%90%E5%B0%84%E8%8A%B1%E6%A0%B7/">辐射花样</a>
+          
+          <a href="/tags/%E9%9C%87%E6%BA%90%E7%90%83/">震源球</a>
+          
+          <a href="/tags/GMT/">GMT</a>
+          
+        </div>
+
+      
+      <nav class="post-nav">
+        
+          <a class="prev" href="/gmt4-style-guide/">
+            <i class="iconfont icon-left"></i>
+            <span class="prev-text nav-default">GMT4 脚本风格指南</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
+        
+          <a class="next" href="/mix-geographical-coordinate-with-cartesian-coordinate/">
+            <span class="next-text nav-default">GMT 绘制地理坐标与笛卡尔坐标混合体</span>
+            <span class="prev-text nav-mobile">下一篇</span>
+            <i class="iconfont icon-right"></i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+        </div>
+        
+  <div id="disqus_thread"></div>
+    <script type="text/javascript">
+    (function() {
+      
+      
+      if (window.location.hostname === 'localhost') return;
+
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      var disqus_shortname = 'seisman';
+      dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+
+  
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:seisman.info@gmail.com" class="iconfont icon-email" title="email"></a>
+      <a href="https://github.com/seisman" class="iconfont icon-github" title="github"></a>
+      <a href="https://movie.douban.com/people/131919859" class="iconfont icon-douban" title="douban"></a>
+  <a href="https://blog.seisman.info/index.xml" type="application/rss+xml" class="iconfont icon-rss" title="rss"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://gohugo.io">Hugo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  
+
+  <span class="copyright-year">
+    &copy; 
+    
+      2013 - 
+    2018
+    <span class="heart">
+      <i class="iconfont icon-heart"></i>
+    </span>
+    <span class="author">SeisMan</span>
+  </span>
+</div>
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+<script src="/lib/highlight/highlight.pack.js?v=20171001"></script><script type="text/javascript" src="/lib/jquery/jquery-3.2.1.min.js"></script>
+  <script type="text/javascript" src="/lib/slideout/slideout-1.0.1.min.js"></script>
+  <script type="text/javascript" src="/lib/fancybox/jquery.fancybox-3.1.20.min.js"></script>
+<script type="text/javascript" src="/dist/even.min.js?v=3.1.1"></script>
+  <script type="text/javascript">
+    window.MathJax = {
+      tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]},
+      showProcessingMessages: false,
+      messageStyle: 'none'
+    };
+  </script>
+  <script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+
+
+
+
+
+
+
+</body>
+</html>
